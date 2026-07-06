@@ -1,0 +1,24 @@
+---
+description: macos-mcp — local Mac apps; draft-only email
+alwaysApply: true
+---
+
+# macos-mcp
+
+## Mail (write)
+
+- Use `mail_draft_email` only. Never send. User reviews in Mail.app.
+
+## Typography (outgoing mail)
+
+- No em dash, en dash, or spaced hyphen as punctuation in subject/body.
+- Sanitizer must preserve newlines (never `\s{2,}` on full body).
+
+## Signatures
+
+- Set `sender`; signature from `signatures/manifest.json`.
+- No `--` before signature block.
+
+## General
+
+- All tools are local macOS only. No cloud email APIs.

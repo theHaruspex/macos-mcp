@@ -1,0 +1,13 @@
+{
+  "name": "macos-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local macOS MCP server — Mail, Calendar, Reminders, Notes, Messages via AppleScript/JXA",
+  "type": "commonjs",
+  "engines": { "node": ">=20" },
+  "bin": { "macos-mcp": "bin/macos-mcp.js" },
+  "scripts": {
+    "start": "node bin/macos-mcp.js",
+    "setup": "node scripts/install-mcp.js"
+  }
+}

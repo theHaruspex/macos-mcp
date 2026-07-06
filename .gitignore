@@ -1,0 +1,7 @@
+signatures/manifest.json
+signatures/*.txt
+!signatures/*.example
+!signatures/manifest.json.example
+
+.DS_Store
+node_modules/
