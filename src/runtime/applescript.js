@@ -78,6 +78,9 @@ function draftReplyAppleScript({
   attachments = [],
 } = {}) {
   if (message_id == null) throw new Error('message_id is required');
+  if (body) {
+    execFileSync('pbcopy', { input: body });
+  }
   const files = resolveAttachments(attachments);
   const senderLine = sender ? `set sender of theReply to "${esc(sender)}"` : '';
   const replyCmd = reply_all ? 'reply all theMessage' : 'reply theMessage';
@@ -89,14 +92,11 @@ function draftReplyAppleScript({
     .join('\n    ');
   const pasteBlock = body
     ? `
-  set savedClipboard to ""
-  try
-    set savedClipboard to the clipboard as text
-  end try
-  set the clipboard to ${applescriptString(body)}
   delay 1.5
   set bodyPrepended to true
   try
+    tell application "Mail" to activate
+    delay 0.3
     tell application "System Events"
       tell process "Mail"
         set frontmost to true
@@ -105,9 +105,6 @@ function draftReplyAppleScript({
     end tell
   on error
     set bodyPrepended to false
-  end try
-  try
-    if savedClipboard is not "" then set the clipboard to savedClipboard
   end try`
     : 'set bodyPrepended to false';
   const script = `
