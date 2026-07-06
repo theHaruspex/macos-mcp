@@ -87,14 +87,29 @@ function draftReplyAppleScript({
         `make new attachment with properties {file name:(POSIX file "${esc(f)}")} at after the last paragraph of content of theReply`
     )
     .join('\n    ');
-  const bodyBlock = body
+  const pasteBlock = body
     ? `
-  set origSender to sender of theMessage
-  set origDate to date received of theMessage
-  set origContent to content of theMessage
-  set quoteHeader to return & return & "On " & (origDate as string) & ", " & origSender & " wrote:" & return & return
-  set content of theReply to ${applescriptString(body)} & quoteHeader & origContent`
-    : '';
+  set savedClipboard to ""
+  try
+    set savedClipboard to the clipboard as text
+  end try
+  set the clipboard to ${applescriptString(body)}
+  delay 1.5
+  set bodyPrepended to true
+  try
+    tell application "System Events"
+      tell process "Mail"
+        set frontmost to true
+        keystroke "v" using command down
+      end tell
+    end tell
+  on error
+    set bodyPrepended to false
+  end try
+  try
+    if savedClipboard is not "" then set the clipboard to savedClipboard
+  end try`
+    : 'set bodyPrepended to false';
   const script = `
 tell application "Mail" to activate
 tell application "Mail"
@@ -103,13 +118,20 @@ tell application "Mail"
   set theReply to ${replyCmd} with opening window
   set visible of theReply to true
   ${senderLine}
-  ${bodyBlock}
   tell theReply
     ${attachLines}
   end tell
-  return subject of theReply
+  ${pasteBlock}
+  return (subject of theReply) & tab & bodyPrepended
 end tell`;
-  const subject = runAppleScript(script);
+  const out = runAppleScript(script);
+  const [subject, bodyPrependedRaw] = out.split('\t');
+  const body_prepended = bodyPrependedRaw === 'true';
+  if (body && !body_prepended) {
+    throw new Error(
+      'Could not prepend reply body while preserving Mail quote formatting. Grant Accessibility to Cursor (or Terminal) in System Settings → Privacy & Security → Accessibility, then retry.'
+    );
+  }
   return {
     draft: true,
     reply: true,
@@ -118,6 +140,7 @@ end tell`;
     subject,
     sender: sender || null,
     attachments: files,
+    body_prepended,
   };
 }
 
