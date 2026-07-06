@@ -52,6 +52,72 @@ function resolveAttachments(attachments = []) {
   });
 }
 
+function findMessageAppleScript(messageIdVar) {
+  return `
+  set theMessage to missing value
+  repeat with acct in accounts
+    repeat with mb in mailboxes of acct
+      try
+        set hits to (every message of mb whose id is ${messageIdVar})
+        if (count of hits) > 0 then
+          set theMessage to item 1 of hits
+          exit repeat
+        end if
+      end try
+    end repeat
+    if theMessage is not missing value then exit repeat
+  end repeat
+  if theMessage is missing value then error "Message not found: " & ${messageIdVar}`;
+}
+
+function draftReplyAppleScript({
+  message_id,
+  body = '',
+  sender = null,
+  reply_all = false,
+  attachments = [],
+} = {}) {
+  if (message_id == null) throw new Error('message_id is required');
+  const files = resolveAttachments(attachments);
+  const senderLine = sender ? `set sender of theReply to "${esc(sender)}"` : '';
+  const replyCmd = reply_all ? 'reply all theMessage' : 'reply theMessage';
+  const attachLines = files
+    .map(
+      (f) =>
+        `make new attachment with properties {file name:(POSIX file "${esc(f)}")} at after the last paragraph of content of theReply`
+    )
+    .join('\n    ');
+  const bodyLine = body ? `set content of theReply to ${applescriptString(body)}` : '';
+  const script = `
+tell application "Mail" to activate
+tell application "Mail"
+  set targetId to ${Number(message_id)}
+  ${findMessageAppleScript('targetId')}
+  set theReply to ${replyCmd} with opening window
+  set visible of theReply to true
+  ${senderLine}
+  ${bodyLine}
+  tell theReply
+    ${attachLines}
+  end tell
+  try
+    set c to content of theReply
+    if (length of c) > 0 and character 1 of c is return then set content of theReply to text 2 thru -1 of c
+  end try
+  return subject of theReply
+end tell`;
+  const subject = runAppleScript(script);
+  return {
+    draft: true,
+    reply: true,
+    reply_all: !!reply_all,
+    message_id,
+    subject,
+    sender: sender || null,
+    attachments: files,
+  };
+}
+
 function draftEmailAppleScript({ to = [], cc = [], bcc = [], subject = '', body = '', sender = null, attachments = [] }) {
   if (!to.length) throw new Error('to is required');
   const files = resolveAttachments(attachments);
@@ -289,20 +355,7 @@ function saveMessageAttachmentsAppleScript({ message_id, output_dir } = {}) {
   const script = `
 tell application "Mail"
   set targetId to ${Number(message_id)}
-  set theMessage to missing value
-  repeat with acct in accounts
-    repeat with mb in mailboxes of acct
-      try
-        set hits to (every message of mb whose id is targetId)
-        if (count of hits) > 0 then
-          set theMessage to item 1 of hits
-          exit repeat
-        end if
-      end try
-    end repeat
-    if theMessage is not missing value then exit repeat
-  end repeat
-  if theMessage is missing value then error "Message not found: " & targetId
+  ${findMessageAppleScript('targetId')}
   set outDir to "${esc(dir)}/"
   set saved to ""
   repeat with att in mail attachments of theMessage
@@ -344,6 +397,7 @@ end tell`;
 module.exports = {
   runAppleScript,
   draftEmailAppleScript,
+  draftReplyAppleScript,
   esc,
   applescriptString,
   isoToAppleScriptDate,

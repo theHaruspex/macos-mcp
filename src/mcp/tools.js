@@ -116,6 +116,34 @@ function buildMailTools() {
       handler: async (args) => mail.draftEmail(args),
     },
     {
+      name: 'mail_draft_reply',
+      description:
+        'Open a reply draft in Mail.app for an existing message (never sends). Keeps the thread. Use message_id from mail_list_messages or mail_search_messages.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          message_id: { type: 'integer', description: 'Mail message id to reply to.' },
+          body: { type: 'string' },
+          sender: { type: 'string', description: 'From address; must match a Mail account.' },
+          reply_all: { type: 'boolean', default: false },
+          attachments: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Absolute file paths to attach (~ is expanded). Files must exist.',
+          },
+          signature: {
+            type: 'string',
+            enum: ['default', 'with-founder', 'none'],
+            default: 'default',
+            description: 'Signature variant from signatures/manifest.json.',
+          },
+        },
+        required: ['message_id'],
+        additionalProperties: false,
+      },
+      handler: async (args) => mail.draftReply(args),
+    },
+    {
       name: 'mail_archive_messages',
       description: 'Archive messages by id (Gmail: move to All Mail / remove from Inbox).',
       inputSchema: {

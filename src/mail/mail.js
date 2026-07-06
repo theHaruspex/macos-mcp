@@ -1,7 +1,7 @@
 'use strict';
 
 const { runMailJxa } = require('../runtime/jxa');
-const { draftEmailAppleScript, saveMessageAttachmentsAppleScript } = require('../runtime/applescript');
+const { draftEmailAppleScript, draftReplyAppleScript, saveMessageAttachmentsAppleScript } = require('../runtime/applescript');
 const { appendSignature } = require('./signatures');
 const { sanitizeOutgoingEmail, normalizeDraftBody } = require('./outgoing');
 
@@ -285,6 +285,27 @@ function moveMessages({ message_ids = [], mailbox, account } = {}) {
   );
 }
 
+function draftReply(opts = {}) {
+  if (opts.message_id == null) throw new Error('message_id is required');
+
+  const signatureMode = opts.signature === undefined ? 'default' : opts.signature;
+  const { body, ...sigMeta } = appendSignature({
+    body: sanitizeOutgoingEmail(opts.body || ''),
+    sender: opts.sender || null,
+    signature: signatureMode,
+  });
+
+  const normalizedBody = normalizeDraftBody(body);
+  const result = draftReplyAppleScript({
+    message_id: opts.message_id,
+    body: normalizedBody,
+    sender: opts.sender || null,
+    reply_all: !!opts.reply_all,
+    attachments: opts.attachments || [],
+  });
+  return { ...result, ...sigMeta };
+}
+
 function saveAttachments({ message_id, output_dir } = {}) {
   return saveMessageAttachmentsAppleScript({ message_id, output_dir });
 }
@@ -296,6 +317,7 @@ module.exports = {
   searchMessages,
   getMessage,
   draftEmail,
+  draftReply,
   saveAttachments,
   archiveMessages,
   trashMessages,

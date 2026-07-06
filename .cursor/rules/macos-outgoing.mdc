@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Mail (write)
 
-- Use `mail_draft_email` only. Never send. User reviews in Mail.app.
+- Use `mail_draft_email` or `mail_draft_reply` only. Never send. User reviews in Mail.app.
 
 ## Typography (outgoing mail)
 

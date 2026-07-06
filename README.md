@@ -79,7 +79,8 @@ On first tool call, macOS may prompt for Automation approval per app.
 | `mail_search_messages` | Search subject/sender |
 | `mail_get_message` | Full message by id |
 | `mail_save_attachments` | Save message attachments to a local directory |
-| `mail_draft_email` | Open draft (never sends) |
+| `mail_draft_email` | Open new compose draft (never sends) |
+| `mail_draft_reply` | Open reply draft in thread (never sends) |
 | `mail_archive_messages` | Move to All Mail |
 | `mail_trash_messages` | Move to Trash |
 | `mail_mark_read` | Mark read/unread |
