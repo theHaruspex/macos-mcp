@@ -209,6 +209,65 @@ end tell`;
   };
 }
 
+function createContactAppleScript({ first_name, last_name, email, phone, organization } = {}) {
+  if (!first_name && !last_name) throw new Error('first_name or last_name is required');
+  const props = [];
+  if (first_name) props.push(`first name:"${esc(first_name)}"`);
+  if (last_name) props.push(`last name:"${esc(last_name)}"`);
+  if (organization) props.push(`organization:"${esc(organization)}"`);
+  const emailLine = email
+    ? `make new email at end of emails of newPerson with properties {label:"work", value:"${esc(email)}"}`
+    : '';
+  const phoneLine = phone
+    ? `make new phone at end of phones of newPerson with properties {label:"mobile", value:"${esc(phone)}"}`
+    : '';
+  const script = `
+tell application "Contacts"
+  set newPerson to make new person with properties {${props.join(', ')}}
+  ${emailLine}
+  ${phoneLine}
+  save
+  return id of newPerson
+end tell`;
+  const id = runAppleScript(script);
+  return { id, first_name: first_name || '', last_name: last_name || '' };
+}
+
+function updateContactAppleScript({ contact_id, first_name, last_name, email, phone, organization } = {}) {
+  if (!contact_id) throw new Error('contact_id is required');
+  const lines = [];
+  if (first_name != null) lines.push(`set first name of thePerson to "${esc(first_name)}"`);
+  if (last_name != null) lines.push(`set last name of thePerson to "${esc(last_name)}"`);
+  if (organization != null) lines.push(`set organization of thePerson to "${esc(organization)}"`);
+  if (email) {
+    lines.push(`try
+    set theEmail to first email of thePerson
+    set value of theEmail to "${esc(email)}"
+  on error
+    make new email at end of emails of thePerson with properties {label:"work", value:"${esc(email)}"}
+  end try`);
+  }
+  if (phone) {
+    lines.push(`try
+    set thePhone to first phone of thePerson
+    set value of thePhone to "${esc(phone)}"
+  on error
+    make new phone at end of phones of thePerson with properties {label:"mobile", value:"${esc(phone)}"}
+  end try`);
+  }
+  if (!lines.length) throw new Error('No fields to update');
+  const script = `
+tell application "Contacts"
+  set thePerson to first person whose id is "${esc(contact_id)}"
+  if thePerson is missing value then error "Contact not found"
+  ${lines.join('\n  ')}
+  save
+  return id of thePerson
+end tell`;
+  const id = runAppleScript(script);
+  return { id, first_name: first_name ?? null, last_name: last_name ?? null, updated: true };
+}
+
 function deleteCalendarEventAppleScript({ calendar, uid }) {
   const script = calendar
     ? `
@@ -241,4 +300,6 @@ module.exports = {
   updateCalendarEventAppleScript,
   getCalendarEventAppleScript,
   deleteCalendarEventAppleScript,
+  createContactAppleScript,
+  updateContactAppleScript,
 };

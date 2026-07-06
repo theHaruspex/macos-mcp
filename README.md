@@ -157,7 +157,7 @@ src/calendar/             → Calendar module
 **JXA vs AppleScript**
 
 - **JXA** (`osascript -l JavaScript`): read/list/search most app data; generic `runJxa(appName, body, args)`.
-- **AppleScript**: `mail_draft_email` and calendar create/update/delete (JXA `make` is unreliable on modern Calendar.app).
+- **AppleScript**: `mail_draft_email`, calendar create/update/delete, and contacts create/update (JXA `make` is unreliable on modern Calendar.app and Contacts.app).
 
 **Response shapes:** lists include `count`; domain keys vary (`items`, `events`, `reminders`, `notes`, `chats`, `contacts`). Errors throw and return MCP `isError: true`.
 
