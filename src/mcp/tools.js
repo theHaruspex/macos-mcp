@@ -69,6 +69,23 @@ function buildMailTools() {
       handler: async (args) => mail.getMessage(args),
     },
     {
+      name: 'mail_save_attachments',
+      description: 'Save all attachments from a Mail message to a local directory.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          message_id: { type: 'integer' },
+          output_dir: {
+            type: 'string',
+            description: 'Directory to save files into (absolute or ~ path). Created if missing.',
+          },
+        },
+        required: ['message_id', 'output_dir'],
+        additionalProperties: false,
+      },
+      handler: async (args) => mail.saveAttachments(args),
+    },
+    {
       name: 'mail_draft_email',
       description:
         'Open a draft in Mail.app (never sends). Appends signature from signatures/ when sender is set. Em dashes are stripped from subject/body.',

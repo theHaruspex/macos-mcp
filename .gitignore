@@ -3,5 +3,7 @@ signatures/*.txt
 !signatures/*.example
 !signatures/manifest.json.example
 
+.data/
+
 .DS_Store
 node_modules/

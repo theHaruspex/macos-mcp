@@ -281,6 +281,44 @@ end tell`;
   return { deleted: true, contact_id };
 }
 
+function saveMessageAttachmentsAppleScript({ message_id, output_dir } = {}) {
+  if (message_id == null) throw new Error('message_id is required');
+  if (!output_dir) throw new Error('output_dir is required');
+  const dir = path.resolve(String(output_dir).replace(/^~(?=\/|$)/, process.env.HOME || ''));
+  fs.mkdirSync(dir, { recursive: true });
+  const script = `
+tell application "Mail"
+  set targetId to ${Number(message_id)}
+  set theMessage to missing value
+  repeat with acct in accounts
+    repeat with mb in mailboxes of acct
+      try
+        set hits to (every message of mb whose id is targetId)
+        if (count of hits) > 0 then
+          set theMessage to item 1 of hits
+          exit repeat
+        end if
+      end try
+    end repeat
+    if theMessage is not missing value then exit repeat
+  end repeat
+  if theMessage is missing value then error "Message not found: " & targetId
+  set outDir to "${esc(dir)}/"
+  set saved to ""
+  repeat with att in mail attachments of theMessage
+    set nm to name of att
+    set outPath to outDir & nm
+    save att in (POSIX file outPath)
+    if saved is not "" then set saved to saved & tab
+    set saved to saved & outPath
+  end repeat
+  return saved
+end tell`;
+  const out = runAppleScript(script);
+  const files = out ? out.split('\t').filter(Boolean) : [];
+  return { message_id, output_dir: dir, files, count: files.length };
+}
+
 function deleteCalendarEventAppleScript({ calendar, uid }) {
   const script = calendar
     ? `
@@ -316,4 +354,5 @@ module.exports = {
   createContactAppleScript,
   updateContactAppleScript,
   deleteContactAppleScript,
+  saveMessageAttachmentsAppleScript,
 };

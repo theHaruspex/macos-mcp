@@ -1,7 +1,7 @@
 'use strict';
 
 const { runMailJxa } = require('../runtime/jxa');
-const { draftEmailAppleScript } = require('../runtime/applescript');
+const { draftEmailAppleScript, saveMessageAttachmentsAppleScript } = require('../runtime/applescript');
 const { appendSignature } = require('./signatures');
 const { sanitizeOutgoingEmail, normalizeDraftBody } = require('./outgoing');
 
@@ -285,6 +285,10 @@ function moveMessages({ message_ids = [], mailbox, account } = {}) {
   );
 }
 
+function saveAttachments({ message_id, output_dir } = {}) {
+  return saveMessageAttachmentsAppleScript({ message_id, output_dir });
+}
+
 module.exports = {
   listAccounts,
   listMailboxes,
@@ -292,6 +296,7 @@ module.exports = {
   searchMessages,
   getMessage,
   draftEmail,
+  saveAttachments,
   archiveMessages,
   trashMessages,
   markRead,
