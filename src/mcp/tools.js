@@ -118,7 +118,7 @@ function buildMailTools() {
     {
       name: 'mail_draft_reply',
       description:
-        'Open a reply draft in Mail.app for an existing message (never sends). Keeps the thread. Use message_id from mail_list_messages or mail_search_messages.',
+        'Open a reply draft in Mail.app for an existing message (never sends). Keeps the thread. With body: prepends your text above a quoted copy of the original. Without body: opens Mail native reply with its rich-text quote.',
       inputSchema: {
         type: 'object',
         properties: {

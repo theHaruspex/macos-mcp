@@ -87,7 +87,14 @@ function draftReplyAppleScript({
         `make new attachment with properties {file name:(POSIX file "${esc(f)}")} at after the last paragraph of content of theReply`
     )
     .join('\n    ');
-  const bodyLine = body ? `set content of theReply to ${applescriptString(body)}` : '';
+  const bodyBlock = body
+    ? `
+  set origSender to sender of theMessage
+  set origDate to date received of theMessage
+  set origContent to content of theMessage
+  set quoteHeader to return & return & "On " & (origDate as string) & ", " & origSender & " wrote:" & return & return
+  set content of theReply to ${applescriptString(body)} & quoteHeader & origContent`
+    : '';
   const script = `
 tell application "Mail" to activate
 tell application "Mail"
@@ -96,14 +103,10 @@ tell application "Mail"
   set theReply to ${replyCmd} with opening window
   set visible of theReply to true
   ${senderLine}
-  ${bodyLine}
+  ${bodyBlock}
   tell theReply
     ${attachLines}
   end tell
-  try
-    set c to content of theReply
-    if (length of c) > 0 and character 1 of c is return then set content of theReply to text 2 thru -1 of c
-  end try
   return subject of theReply
 end tell`;
   const subject = runAppleScript(script);
