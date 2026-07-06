@@ -266,6 +266,11 @@ function buildCalendarTools() {
           end: { type: 'string' },
           location: { type: 'string' },
           notes: { type: 'string' },
+          attendees: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Invitee email addresses.',
+          },
           alarms: { type: 'array', items: { type: 'number' }, description: 'Minutes before start.' },
         },
         required: ['calendar', 'summary', 'start', 'end'],

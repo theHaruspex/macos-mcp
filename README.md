@@ -94,7 +94,7 @@ On first tool call, macOS may prompt for Automation approval per app.
 | `calendar_list_events` | Events in date range |
 | `calendar_search_events` | Search title/location |
 | `calendar_get_event` | Full event |
-| `calendar_create_event` | Create event |
+| `calendar_create_event` | Create event (optional `attendees` email list) |
 | `calendar_update_event` | Update event |
 | `calendar_delete_event` | Delete event |
 

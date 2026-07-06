@@ -197,7 +197,7 @@ function isoToAppleScriptDate(iso) {
   return `${weekdays[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} at ${hour12}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${ampm}`;
 }
 
-function createCalendarEventAppleScript({ calendar, summary, start, end, location, notes }) {
+function createCalendarEventAppleScript({ calendar, summary, start, end, location, notes, attendees = [] } = {}) {
   const props = [
     `summary:"${esc(summary)}"`,
     `start date:date "${isoToAppleScriptDate(start)}"`,
@@ -205,15 +205,19 @@ function createCalendarEventAppleScript({ calendar, summary, start, end, locatio
   ];
   if (location) props.push(`location:"${esc(location)}"`);
   if (notes) props.push(`description:"${esc(notes)}"`);
+  const attendeeLines = (attendees || [])
+    .map((email) => `make new attendee at end of attendees of newEvent with properties {email:"${esc(email)}"}`)
+    .join('\n    ');
   const script = `
 tell application "Calendar"
   tell calendar "${esc(calendar)}"
     set newEvent to make new event with properties {${props.join(', ')}}
+    ${attendeeLines}
     return uid of newEvent
   end tell
 end tell`;
   const uid = runAppleScript(script);
-  return { uid, summary, start, end, calendar };
+  return { uid, summary, start, end, calendar, attendees: attendees || [] };
 }
 
 function updateCalendarEventAppleScript({ calendar, uid, summary, start, end, location, notes }) {

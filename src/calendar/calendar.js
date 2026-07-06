@@ -123,11 +123,19 @@ function getEvent({ uid, calendar } = {}) {
   return getCalendarEventAppleScript({ uid, calendar: calendar || null });
 }
 
-function createEvent({ calendar, summary, start, end, location, notes, alarms } = {}) {
+function createEvent({ calendar, summary, start, end, location, notes, alarms, attendees } = {}) {
   if (!calendar) throw new Error('calendar is required');
   if (!summary) throw new Error('summary is required');
   if (!start || !end) throw new Error('start and end are required');
-  const created = createCalendarEventAppleScript({ calendar, summary, start, end, location, notes });
+  const created = createCalendarEventAppleScript({
+    calendar,
+    summary,
+    start,
+    end,
+    location,
+    notes,
+    attendees,
+  });
   if (alarms && alarms.length) {
     runCalendarJxa(
       `
