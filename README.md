@@ -135,10 +135,13 @@ Requires **Full Disk Access**. Reads iMessage/SMS locally; no network.
 
 | Tool | Description |
 |------|-------------|
+| `contacts_list` | List contacts (optional: missing email only) |
 | `contacts_search` | Search by name/email/phone |
 | `contacts_get` | Full contact card |
 | `contacts_create` | Create contact |
 | `contacts_update` | Update contact |
+| `contacts_delete` | Delete contact |
+| `contacts_import_csv` | Import Google Contacts CSV (upsert by email) |
 
 ## Architecture
 

@@ -268,6 +268,19 @@ end tell`;
   return { id, first_name: first_name ?? null, last_name: last_name ?? null, updated: true };
 }
 
+function deleteContactAppleScript({ contact_id } = {}) {
+  if (!contact_id) throw new Error('contact_id is required');
+  const script = `
+tell application "Contacts"
+  set thePerson to first person whose id is "${esc(contact_id)}"
+  if thePerson is missing value then error "Contact not found"
+  delete thePerson
+  save
+end tell`;
+  runAppleScript(script);
+  return { deleted: true, contact_id };
+}
+
 function deleteCalendarEventAppleScript({ calendar, uid }) {
   const script = calendar
     ? `
@@ -302,4 +315,5 @@ module.exports = {
   deleteCalendarEventAppleScript,
   createContactAppleScript,
   updateContactAppleScript,
+  deleteContactAppleScript,
 };

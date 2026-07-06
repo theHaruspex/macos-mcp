@@ -467,6 +467,19 @@ function buildMessagesTools() {
 function buildContactsTools() {
   return [
     {
+      name: 'contacts_list',
+      description: 'List contacts. Optionally return only contacts missing an email address.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          missing_email: { type: 'boolean', default: false },
+          limit: { type: 'integer', minimum: 1, maximum: 500, default: 100 },
+        },
+        additionalProperties: false,
+      },
+      handler: async (args) => contacts.listContacts(args),
+    },
+    {
       name: 'contacts_search',
       description: 'Search Contacts by name, email, or phone substring.',
       inputSchema: {
@@ -483,7 +496,7 @@ function buildContactsTools() {
       inputSchema: {
         type: 'object',
         properties: {
-          contact_id: { type: 'integer' },
+          contact_id: { type: 'string', description: 'Contacts.app person id (UUID:ABPerson).' },
           name: { type: 'string' },
         },
         additionalProperties: false,
@@ -512,7 +525,7 @@ function buildContactsTools() {
       inputSchema: {
         type: 'object',
         properties: {
-          contact_id: { type: 'integer' },
+          contact_id: { type: 'string', description: 'Contacts.app person id (UUID:ABPerson).' },
           first_name: { type: 'string' },
           last_name: { type: 'string' },
           email: { type: 'string' },
@@ -523,6 +536,43 @@ function buildContactsTools() {
         additionalProperties: false,
       },
       handler: async (args) => contacts.updateContact(args),
+    },
+    {
+      name: 'contacts_delete',
+      description: 'Delete a contact by Contacts.app person id.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          contact_id: { type: 'string', description: 'Contacts.app person id (UUID:ABPerson).' },
+        },
+        required: ['contact_id'],
+        additionalProperties: false,
+      },
+      handler: async (args) => contacts.deleteContact(args),
+    },
+    {
+      name: 'contacts_import_csv',
+      description:
+        'Import contacts from a Google Contacts CSV export. Upserts by email, optionally removes name-only duplicates.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          csv_path: { type: 'string', description: 'Absolute or ~ path to the CSV file.' },
+          organization: {
+            type: 'string',
+            description: 'Default organization when CSV Organization Name is blank.',
+            default: 'eCustom Solutions',
+          },
+          dedupe: {
+            type: 'boolean',
+            description: 'Delete same-name contacts that have no email after import.',
+            default: true,
+          },
+        },
+        required: ['csv_path'],
+        additionalProperties: false,
+      },
+      handler: async (args) => contacts.importContactsCsv(args),
     },
   ];
 }
